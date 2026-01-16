@@ -1,24 +1,64 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack, usePathname } from "expo-router";
+import "../global.css";
+import { View } from "react-native";
+import { CartProvider } from "../contexts/CartContext";
+import { FloatingCart } from "../components/FloatingCart";
+import { useCartSummary } from "../hooks/useCartSummary";
+import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { NotificationProvider } from "@/contexts/NotificationsContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function AppContent() {
+  const { userId, loading } = useAuth();
+  const pathname = usePathname();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  const { totalQty, totalPrice, refresh } = useCartSummary(userId);
+  const [showFloatingCart, setShowFloatingCart] = useState(false);
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const isCartScreen = pathname.startsWith("/cart");
+
+  useEffect(() => {
+    if (totalQty > 0 && !isCartScreen) {
+      setShowFloatingCart(false);
+      const timer = setTimeout(() => setShowFloatingCart(true), 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowFloatingCart(false);
+    }
+  }, [totalQty, isCartScreen]);
+
+  if (loading) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <CartProvider value={{ refreshCart: refresh }}>
+      <View className="flex-1">
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="product/[id]" />
+          <Stack.Screen name="cart/cart" />
+        </Stack>
+
+        {showFloatingCart && (
+          <FloatingCart
+            totalQty={totalQty}
+            totalPrice={totalPrice}
+          />
+        )}
+      </View>
+    </CartProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NotificationProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </NotificationProvider>
+    </GestureHandlerRootView >
   );
 }

@@ -1,35 +1,79 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { router, Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+    return (
+        <Tabs
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: "#2756AE",
+                tabBarStyle: {
+                    height: 60,
+                },
+            }}
+        >
+            <Tabs.Screen
+                name="index"
+                options={{
+                    title: "Trang chủ",
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="sparkles" size={size} color={color} />
+                    ),
+                }}
+            />
 
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+            <Tabs.Screen
+                name="menu"
+                options={{
+                    title: "Menu",
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="cafe" size={size} color={color} />
+                    ),
+                }}
+            />
+
+            <Tabs.Screen
+                name="news"
+                options={{
+                    headerShown: false,
+                    title: "Tin Tức",
+                    headerTitle: "TIN TỨC - ƯU ĐÃI",
+                    headerStyle: {
+                        backgroundColor: "#0E2A47", // 🎨 bg header
+                    },
+                    headerTitleStyle: {
+                        color: "#fff",
+                        fontWeight: "300",
+                        fontSize: 18,
+                    },
+                    headerTintColor: "#fff", // màu icon back (nếu có)
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="flame" size={size} color={color} />
+                    ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        router.replace("/(tabs)/news");
+                    },
+                }}
+            />
+
+            <Tabs.Screen
+                name="account"
+                options={{
+                    title: "Tài khoản",
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="person" size={size} color={color} />
+                    ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        router.replace("/(tabs)/account/account");
+                    },
+                }}
+            />
+        </Tabs>
+    );
 }
