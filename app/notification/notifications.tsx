@@ -64,7 +64,7 @@ export default function NotificationsScreen() {
             </View>
 
             <View className="ml-3 flex-1">
-              <Text className="text-sm font-bold text-blue-900">
+              <Text className="text-base font-semibold text-[#1b4f94]">
                 {item.title}
               </Text>
               <Text className="text-sm text-gray-600 mt-1">
@@ -119,15 +119,6 @@ export default function NotificationsScreen() {
                   </Text>
                 </View>
               </View>
-
-              {/* Mark all */}
-              {notifications.length > 0 && (
-                <Pressable onPress={markAllAsRead}>
-                  <Text className="text-blue-500 font-semibold text-sm">
-                    Đã đọc tất cả
-                  </Text>
-                </Pressable>
-              )}
             </View>
 
             {/* ===== CONTENT ===== */}

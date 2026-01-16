@@ -9,14 +9,18 @@ import {
   Image,
   ScrollView,
   Animated,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Swipeable } from "react-native-gesture-handler";
+
 
 /* ===============================
    HELPER
@@ -69,6 +73,8 @@ export default function AdminProducts() {
 
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
 
   /* ===============================
      FETCH DATA
@@ -183,18 +189,25 @@ export default function AdminProducts() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert("Xoá sản phẩm?", "Không thể hoàn tác", [
-      { text: "Huỷ" },
-      {
-        text: "Xoá",
-        style: "destructive",
-        onPress: async () => {
-          await supabase.from("products").delete().eq("id", id);
-          fetchProducts();
-        },
-      },
-    ]);
+    setDeleteId(id);
   };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+
+    await supabase.from("products").delete().eq("id", deleteId);
+    setDeleteId(null);
+    fetchProducts();
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+      fetchCategories();
+    }, [])
+  );
+
+
 
   /* ===============================
      RENDER ITEM
@@ -322,151 +335,215 @@ export default function AdminProducts() {
         }
       />
 
-      
+
       {/* ===== EDIT MODAL ===== */}
       <Modal visible={!!editing} transparent animationType="slide">
+        {/* BACKDROP */}
         <Pressable
           className="flex-1 bg-black/40 justify-end"
-          onPress={() => setEditing(null)}
+          onPress={() => {
+            Keyboard.dismiss();
+            setEditing(null);
+          }}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+            {/* CONTENT */}
+            <Pressable
+              onPress={() => Keyboard.dismiss()}
+              className="bg-white rounded-t-3xl p-5"
+            >
+              {/* HEADER */}
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-xl font-bold text-[#1b4f94]">
+                  Sửa sản phẩm
+                </Text>
+
+                <Pressable
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setEditing(null);
+                  }}
+                  className="bg-gray-200 rounded-full p-1"
+                >
+                  <Ionicons name="close" size={22} color="#1b4f94" />
+                </Pressable>
+              </View>
+
+              {/* IMAGE */}
+              <View className="mb-4">
+                <View className="h-40 rounded-2xl bg-gray-100 overflow-hidden items-center justify-center">
+                  {image ? (
+                    <Image
+                      source={{
+                        uri: image.startsWith("file://")
+                          ? image
+                          : getPublicImageUrl(image) || image,
+                      }}
+                      className="w-full h-full"
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <Ionicons name="image-outline" size={36} color="#9ca3af" />
+                  )}
+                </View>
+
+                <View className="flex-row gap-3 mt-3">
+                  <Pressable
+                    onPress={pickImage}
+                    className="flex-1 border border-gray-200 rounded-xl py-2 items-center"
+                  >
+                    <Text className="text-sm text-[#082841]">
+                      Chọn ảnh
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setImage("")}
+                    className="flex-1 border border-gray-200 rounded-xl py-2 items-center"
+                  >
+                    <Text className="text-sm text-[#082841]">
+                      Dán link ảnh
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {image === "" && (
+                <TextInput
+                  placeholder="Dán link ảnh (https://...)"
+                  className="border border-gray-200 rounded-xl p-3 mb-3"
+                  onChangeText={setImage}
+                />
+              )}
+
+              {/* FORM */}
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="Tên sản phẩm"
+                className="border border-gray-200 rounded-xl p-3 mb-3"
+              />
+
+              <TextInput
+                value={stats}
+                onChangeText={setStats}
+                placeholder="Mô tả / stats"
+                className="border border-gray-200 rounded-xl p-3 mb-3"
+              />
+
+              <View className="flex-row gap-3 mb-3">
+                <TextInput
+                  value={price}
+                  onChangeText={setPrice}
+                  keyboardType="numeric"
+                  placeholder="Giá"
+                  className="border border-gray-200 rounded-xl p-3 flex-1"
+                />
+                <TextInput
+                  value={salePrice}
+                  onChangeText={setSalePrice}
+                  keyboardType="numeric"
+                  placeholder="Giá sale"
+                  className="border border-gray-200 rounded-xl p-3 flex-1"
+                />
+              </View>
+
+              {/* CATEGORY */}
+              <View>
+                <Text className="text-base font-bold text-[#1b4f94] mb-2">
+                  Danh mục
+                </Text>
+                <View className="border border-gray-200 rounded-xl overflow-hidden">
+                  {categories.map((cat) => (
+                    <Pressable
+                      key={cat.id}
+                      onPress={() => setCategoryId(cat.id)}
+                      className={`p-3 ${categoryId === cat.id ? "bg-[#1C4273]/10" : ""
+                        }`}
+                    >
+                      <Text
+                        className={`${categoryId === cat.id
+                          ? "text-[#1C4273] font-bold"
+                          : "text-gray-700"
+                          }`}
+                      >
+                        {cat.title}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+
+              {/* SAVE */}
+              <View className="mt-6">
+                <Pressable
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    handleUpdate();
+                  }}
+                  className="bg-[#1b4f94] py-3 rounded-xl items-center"
+                >
+                  <Text className="text-white font-bold text-base">
+                    Lưu thay đổi
+                  </Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </KeyboardAvoidingView>
+        </Pressable>
+      </Modal>
+      <Modal visible={!!deleteId} transparent animationType="slide">
+        <Pressable
+          className="flex-1 bg-black/40 justify-end"
+          onPress={() => setDeleteId(null)}
         >
           <Pressable
             onPress={() => { }}
-            className="bg-white rounded-t-3xl p-5"
+            className="bg-white rounded-t-3xl p-6"
           >
-            {/* HEADER */}
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-xl font-bold text-[#1b4f94]">
-                Sửa sản phẩm
-              </Text>
+            {/* ICON */}
+            <View className="items-center mb-4">
+              <View className="w-14 h-14 rounded-full bg-red-100 items-center justify-center">
+                <Ionicons name="trash-outline" size={28} color="#dc2626" />
+              </View>
+            </View>
+
+            {/* TITLE */}
+            <Text className="text-xl font-bold text-center text-gray-900 mb-2">
+              Xoá sản phẩm?
+            </Text>
+
+            {/* DESC */}
+            <Text className="text-center text-gray-500 mb-6">
+              Hành động này không thể hoàn tác. Dữ liệu sẽ bị xoá vĩnh viễn.
+            </Text>
+
+            {/* ACTIONS */}
+            <View className="flex-row gap-3">
               <Pressable
-                onPress={() => setEditing(null)}
-                className="bg-gray-200 rounded-full p-1"
+                onPress={() => setDeleteId(null)}
+                className="flex-1 py-3 rounded-xl border border-gray-200 items-center"
               >
-                <Ionicons name="close" size={22} color="#1b4f94" />
+                <Text className="text-gray-700 font-semibold">
+                  Huỷ
+                </Text>
               </Pressable>
-            </View>
 
-            {/* IMAGE */}
-            <View className="mb-4">
-              <View className="h-40 rounded-2xl bg-gray-100 overflow-hidden items-center justify-center">
-                {image ? (
-                  <Image
-                    source={{
-                      uri: image.startsWith("file://")
-                        ? image
-                        : getPublicImageUrl(image) || image,
-                    }}
-                    className="w-full h-full"
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <Ionicons name="image-outline" size={36} color="#9ca3af" />
-                )}
-              </View>
-
-              <View className="flex-row gap-3 mt-3">
-                <Pressable
-                  onPress={pickImage}
-                  className="flex-1 border border-gray-200 rounded-xl py-2 items-center"
-                >
-                  <Text className="text-sm text-[#082841]">
-                    Chọn ảnh
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => setImage("")}
-                  className="flex-1 border border-gray-200 rounded-xl py-2 items-center"
-                >
-                  <Text className="text-sm text-[#082841]">
-                    Dán link ảnh
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {image === "" && (
-              <TextInput
-                placeholder="Dán link ảnh (https://...)"
-                className="border border-gray-200 rounded-xl p-3 mb-3"
-                onChangeText={setImage}
-              />
-            )}
-
-            {/* FORM */}
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Tên sản phẩm"
-              className="border border-gray-200 rounded-xl p-3 mb-3"
-            />
-
-            <TextInput
-              value={stats}
-              onChangeText={setStats}
-              placeholder="Mô tả / stats"
-              className="border border-gray-200 rounded-xl p-3 mb-3"
-            />
-
-            <View className="flex-row gap-3 mb-3">
-              <TextInput
-                value={price}
-                onChangeText={setPrice}
-                keyboardType="numeric"
-                placeholder="Giá"
-                className="border border-gray-200 rounded-xl p-3 flex-1"
-              />
-              <TextInput
-                value={salePrice}
-                onChangeText={setSalePrice}
-                keyboardType="numeric"
-                placeholder="Giá sale"
-                className="border border-gray-200 rounded-xl p-3 flex-1"
-              />
-            </View>
-
-            {/* CATEGORY */}
-            <View className="">
-              <Text className="text-base font-bold text-[#1b4f94] mb-2">
-                Danh mục
-              </Text>
-              <View className="border border-gray-200 rounded-xl overflow-hidden">
-                {categories.map((cat) => (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => setCategoryId(cat.id)}
-                    className={`p-3 ${categoryId === cat.id
-                      ? "bg-[#1C4273]/10"
-                      : ""
-                      }`}
-                  >
-                    <Text
-                      className={`${categoryId === cat.id
-                        ? "text-[#1C4273] font-bold"
-                        : "text-gray-700"
-                        }`}
-                    >
-                      {cat.title}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
-            {/* SAVE */}
-            <View className="mt-6">
               <Pressable
-                onPress={handleUpdate}
-                className="bg-[#1b4f94] py-3 rounded-xl items-center"
+                onPress={confirmDelete}
+                className="flex-1 py-3 rounded-xl bg-red-600 items-center"
               >
-                <Text className="text-white font-bold text-base">
-                  Lưu thay đổi
+                <Text className="text-white font-bold">
+                  Xoá
                 </Text>
               </Pressable>
             </View>
           </Pressable>
         </Pressable>
       </Modal>
+
     </SafeAreaView>
   );
 }

@@ -156,6 +156,41 @@ export default function MenuScreen() {
         >
           <View className="flex-1 bg-white/80">
             <SafeAreaView edges={["top"]} className="bg-transparent">
+              {/* ===== PAGE HEADER (Non-sticky) ===== */}
+              <View className="px-4 pb-3 bg-white/80">
+                <Text className="text-2xl font-bold text-[#1F4171]">
+                  Thực đơn
+                </Text>
+                <Text className="text-sm text-gray-500 mt-1">
+                  Chọn món bạn yêu thích ☕
+                </Text>
+              </View>
+
+              {/* ===== STICKY CATEGORY BAR ===== */}
+              <View className="shadow-sm">
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="px-4 py-3"
+                >
+                  <CategoryPill
+                    label="Tất cả"
+                    active={selectedCategory === "all"}
+                    onPress={() => onChangeCategory("all")}
+                  />
+
+                  {sections.map((section) => (
+                    <CategoryPill
+                      key={section.title}
+                      label={section.title}
+                      active={selectedCategory === section.title}
+                      onPress={() => onChangeCategory(section.title)}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* ===== MENU LIST ===== */}
               <SectionList
                 sections={filteredSections}
                 keyExtractor={(item) => item.id}
@@ -163,46 +198,9 @@ export default function MenuScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
 
-                /* ===== STICKY CATEGORY BAR ===== */
-                ListHeaderComponent={
-
-                  <View className="">
-                    {/* ===== PAGE HEADER ===== */}
-                    <View className="px-4 pt-4 pb-3 mb-2">
-                      <Text className="text-2xl font-bold text-[#1F4171]">
-                        Thực đơn
-                      </Text>
-                      <Text className="text-sm text-gray-500 mt-1">
-                        Chọn món bạn yêu thích ☕
-                      </Text>
-                    </View>
-
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      className="px-4 py-3"
-                    >
-                      <CategoryPill
-                        label="Tất cả"
-                        active={selectedCategory === "all"}
-                        onPress={() => onChangeCategory("all")}
-                      />
-
-                      {sections.map((section) => (
-                        <CategoryPill
-                          key={section.title}
-                          label={section.title}
-                          active={selectedCategory === section.title}
-                          onPress={() => onChangeCategory(section.title)}
-                        />
-                      ))}
-                    </ScrollView>
-                  </View>
-                }
-
                 /* ===== SECTION HEADER ===== */
                 renderSectionHeader={({ section }) => (
-                  <View className="px-4 pt-6 pb-2 mb-2">
+                  <View className="px-4 pt-6 pb-2 mb-2 bg-white/80">
                     <Text className="text-gray-500 font-semibold">
                       ✨{section.title}✨
                     </Text>

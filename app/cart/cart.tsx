@@ -337,9 +337,10 @@ export default function CartScreen() {
                           renderRightActions={() => renderRightActions(item)}
                           overshootRight={false}
                         >
-                          <View className="flex-row bg-gray-50 rounded-2xl p-3">
+                          <View className="flex-row bg-white/85 rounded-2xl p-3">
                             {/* IMAGE */}
                             <Image
+                            
                               source={{ uri: productImageUrl }}
                               className="w-28 h-32 rounded-xl"
                             />

@@ -152,11 +152,10 @@ export default function VerifyOtpScreen() {
                 <Image
                   source={{ uri: logoUrl }}
                   className="self-center"
-                  style={{ height: 170, width: 170 }}
+                  style={{ height: 220, width: 220 }}
                   resizeMode="cover"
                 />
               )}
-
 
               <Text className="text-white text-2xl font-bold text-center mb-2">
                 Xác thực OTP

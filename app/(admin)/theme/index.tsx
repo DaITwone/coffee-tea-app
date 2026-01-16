@@ -167,7 +167,6 @@ export default function ThemeManager() {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     {themes.map((item) => {
                         const bgUrl = getPublicImageUrl(item.background_uri);
-
                         return (
                             <Pressable
                                 key={item.id}
@@ -178,7 +177,7 @@ export default function ThemeManager() {
                                 {bgUrl && (
                                     <Image
                                         source={{ uri: bgUrl }}
-                                        className="w-30 h-64"
+                                        className="w-52 h-80"
                                         resizeMode="cover"
                                     />
                                 )}
@@ -230,7 +229,7 @@ export default function ThemeManager() {
                                     }`}
                             >
                                 {/* Preview login screen */}
-                                <View className="w-48 h-64 relative">
+                                <View className="w-52 h-80 relative">
                                     {/* Background */}
                                     {bgUrl && (
                                         <Image
@@ -334,7 +333,7 @@ export default function ThemeManager() {
                                 {imageUrl && (
                                     <Image
                                         source={{ uri: imageUrl }}
-                                        className="w-56 h-28"
+                                        className="w-60 h-32"
                                         resizeMode="cover"
                                     />
                                 )}

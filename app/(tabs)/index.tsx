@@ -213,8 +213,8 @@ export default function HomeScreen() {
                                                 className="w-14 h-10"
                                             />
                                             {unreadCount > 0 && (
-                                                <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 items-center justify-center border-2 border-white">
-                                                    <Text className="text-white text-[10px] font-bold">
+                                                <View className="absolute -top-1 right-1.5 bg-red-500 rounded-full w-5 h-5 items-center justify-center border-1 border-white">
+                                                    <Text className="text-white text-[11px] font-bold text-center">
                                                         {unreadCount > 9 ? "9+" : unreadCount}
                                                     </Text>
                                                 </View>

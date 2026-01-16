@@ -9,9 +9,9 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Swipeable } from "react-native-gesture-handler";
@@ -24,6 +24,8 @@ import * as ImagePicker from "expo-image-picker";
 export default function AdminNews() {
   const [news, setNews] = useState<any[]>([]);
   const [editing, setEditing] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
 
   // form states
   const [title, setTitle] = useState("");
@@ -57,9 +59,12 @@ export default function AdminNews() {
     setNews(data || []);
   };
 
-  useEffect(() => {
-    fetchNews();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchNews();
+    }, [])
+  );
+
 
   /* ===============================
      OPEN EDIT
@@ -127,7 +132,7 @@ export default function AdminNews() {
   const renderRightActions = (id: string) => (
     <View className="h-full">
       <Pressable
-        onPress={() => handleDelete(id)}
+        onPress={() => setDeleteId(id)}
         className="bg-red-600 h-full w-20 items-center justify-center"
       >
         <Ionicons name="trash-outline" size={24} color="#fff" />
@@ -135,6 +140,8 @@ export default function AdminNews() {
       </Pressable>
     </View>
   );
+
+
 
   /* ===============================
      RENDER ITEM
@@ -406,7 +413,65 @@ export default function AdminNews() {
           </Pressable>
         </KeyboardAvoidingView>
       </Modal>
+      {/* ===== DELETE CONFIRM MODAL ===== */}
+      <Modal
+        visible={!!deleteId}
+        transparent
+        animationType="slide"
+      >
+        <Pressable
+          className="flex-1 bg-black/40 justify-end"
+          onPress={() => setDeleteId(null)}
+        >
+          <Pressable
+            onPress={() => { }}
+            className="bg-white rounded-t-3xl px-6 pt-5 pb-8"
+          >
+            {/* HANDLE BAR */}
+            <View className="w-12 h-1 bg-gray-300 rounded-full self-center mb-4" />
 
+            {/* TITLE */}
+            <Text className="text-lg font-bold text-[#1b4f94] text-center mb-2">
+              Xoá tin tức?
+            </Text>
+
+            <Text className="text-center text-gray-500 mb-6">
+              Hành động này không thể hoàn tác.
+            </Text>
+
+            {/* ACTIONS */}
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => setDeleteId(null)}
+                className="flex-1 border border-gray-300 rounded-xl py-3 items-center"
+              >
+                <Text className="font-semibold text-gray-600">
+                  Huỷ
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={async () => {
+                  if (!deleteId) return;
+
+                  await supabase
+                    .from("news")
+                    .delete()
+                    .eq("id", deleteId);
+
+                  setDeleteId(null);
+                  fetchNews();
+                }}
+                className="flex-1 bg-red-600 rounded-xl py-3 items-center"
+              >
+                <Text className="font-bold text-white">
+                  Xoá
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
     </SafeAreaView>
   );

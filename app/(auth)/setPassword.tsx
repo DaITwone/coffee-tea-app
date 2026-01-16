@@ -62,25 +62,28 @@ export default function SetPasswordScreen() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password,
       });
 
-      if (error) {
-        setError(error.message);
+      if (updateError) {
+        console.error("Update password error:", updateError);
+        setError(updateError.message || "Không thể cập nhật mật khẩu");
+        setLoading(false);
         return;
       }
 
-      // ✅ SUCCESS INLINE
+      // ✅ SUCCESS
       setSuccess(true);
+      setLoading(false);
 
       // ⏳ Chuyển trang sau 1.5s
       setTimeout(() => {
         router.replace("/(tabs)");
       }, 1500);
-    } catch {
+    } catch (err) {
+      console.error("Catch error:", err);
       setError("Có lỗi xảy ra, vui lòng thử lại.");
-    } finally {
       setLoading(false);
     }
   };
@@ -101,7 +104,6 @@ export default function SetPasswordScreen() {
             resizeMode="cover"
             className="flex-1"
           >
-            {/* overlay để chữ dễ đọc */}
             <View className="flex-1 px-6 justify-center">
               {/* Header */}
               <View className="items-center mb-8">
@@ -166,11 +168,10 @@ export default function SetPasswordScreen() {
                     className="absolute right-4 top-4"
                   >
                     <Ionicons
-                      name={showPassword ? "lock-open-outline" : "lock-closed-outline"}
+                      name={showPassword ? "eye-outline" : "eye-off-outline"}
                       size={22}
                       color="rgba(255,255,255,0.6)"
                     />
-
                   </Pressable>
                 </View>
               </View>
@@ -199,11 +200,10 @@ export default function SetPasswordScreen() {
                     className="absolute right-4 top-4"
                   >
                     <Ionicons
-                      name={showPassword ? "lock-open-outline" : "lock-closed-outline"}
+                      name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
                       size={22}
                       color="rgba(255,255,255,0.6)"
                     />
-
                   </Pressable>
                 </View>
               </View>

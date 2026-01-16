@@ -6,6 +6,8 @@ import {
   Modal,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -20,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function AdminVouchers() {
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [editing, setEditing] = useState<any>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [discountValue, setDiscountValue] = useState("");
@@ -51,9 +54,13 @@ export default function AdminVouchers() {
     setVouchers(data || []);
   };
 
-  useEffect(() => {
-    fetchVouchers();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      refreshUser();
+      fetchVouchers();
+    }, [])
+  );
+
 
   /* ===============================
      OPEN EDIT
@@ -125,7 +132,7 @@ export default function AdminVouchers() {
   const renderRightActions = (id: string) => (
     <View className="h-full">
       <Pressable
-        onPress={() => handleDelete(id)}
+        onPress={() => setDeleteId(id)}
         className="bg-red-600 h-full w-20 items-center justify-center"
       >
         <Ionicons name="trash-outline" size={24} color="#fff" />
@@ -220,176 +227,242 @@ export default function AdminVouchers() {
 
       {/* ===== EDIT MODAL ===== */}
       <Modal visible={!!editing} transparent animationType="slide">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+          style={{ flex: 1 }}
+        >
+          <Pressable
+            className="flex-1 bg-black/40 justify-end"
+            onPress={() => setEditing(null)}
+          >
+            <Pressable
+              onPress={() => { }}
+              className="bg-white rounded-t-3xl p-5 max-h-[92%]"
+            >
+              {/* ===== HEADER ===== */}
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-xl font-bold text-[#1c4273]">
+                  Sửa voucher
+                </Text>
+
+                <Pressable
+                  onPress={() => setEditing(null)}
+                  className="bg-gray-200 rounded-full p-1"
+                >
+                  <Ionicons name="close" size={22} color="#1b4f94" />
+                </Pressable>
+              </View>
+
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {/* ================= INFO ================= */}
+                <Text className="text-base font-bold text-[#1b4f94] mb-2">
+                  Thông tin voucher
+                </Text>
+
+                <View className="mb-3">
+                  <Text className="text-xs text-gray-400 mb-1">Mã voucher</Text>
+                  <View className="border border-gray-200 rounded-xl p-3 bg-gray-100">
+                    <Text className="font-semibold text-[#1b4f94]">
+                      {code}
+                    </Text>
+                  </View>
+                </View>
+
+                <TextInput
+                  value={title}
+                  onChangeText={setTitle}
+                  placeholder="Tiêu đề"
+                  className="border border-gray-200 rounded-xl p-3 mb-3"
+                />
+
+                <TextInput
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="Mô tả"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  className="border border-gray-200 rounded-xl p-3 mb-4"
+                />
+
+                {/* ================= DISCOUNT TYPE ================= */}
+                <Text className="text-base font-bold text-[#1b4f94] mb-2">
+                  Loại giảm giá
+                </Text>
+
+                <View className="flex-row gap-2 mb-4">
+                  <Pressable
+                    onPress={() => setDiscountType("percent")}
+                    className={`px-4 py-2 rounded-full ${discountType === "percent"
+                      ? "bg-[#1b4f94]"
+                      : "bg-gray-200"
+                      }`}
+                  >
+                    <Text
+                      className={`text-sm ${discountType === "percent"
+                        ? "text-white font-bold"
+                        : "text-gray-700"
+                        }`}
+                    >
+                      %
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setDiscountType("fixed")}
+                    className={`px-4 py-2 rounded-full ${discountType === "fixed"
+                      ? "bg-[#1b4f94]"
+                      : "bg-gray-200"
+                      }`}
+                  >
+                    <Text
+                      className={`text-sm ${discountType === "fixed"
+                        ? "text-white font-bold"
+                        : "text-gray-700"
+                        }`}
+                    >
+                      VNĐ
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {/* ================= VALUES ================= */}
+                <Text className="text-base font-bold text-[#1b4f94] mb-2">
+                  Giá trị & điều kiện
+                </Text>
+
+                <TextInput
+                  value={discountValue}
+                  onChangeText={setDiscountValue}
+                  keyboardType="numeric"
+                  placeholder="Giá trị giảm"
+                  className="border border-gray-200 rounded-xl p-3 mb-3"
+                />
+
+                <TextInput
+                  value={minOrderValue}
+                  onChangeText={setMinOrderValue}
+                  keyboardType="numeric"
+                  placeholder="Đơn tối thiểu (tuỳ chọn)"
+                  className="border border-gray-200 rounded-xl p-3 mb-3"
+                />
+
+                <TextInput
+                  value={maxUsage}
+                  onChangeText={setMaxUsage}
+                  keyboardType="numeric"
+                  placeholder="Số lần dùng / user"
+                  className="border border-gray-200 rounded-xl p-3 mb-4"
+                />
+
+                {/* ================= FLAGS ================= */}
+                <Text className="text-base font-bold text-[#1b4f94] mb-2">
+                  Trạng thái & đối tượng
+                </Text>
+
+                <Pressable
+                  onPress={() => setForNewUser(!forNewUser)}
+                  className="mb-2"
+                >
+                  <Text
+                    className={`font-semibold ${forNewUser ? "text-green-600" : "text-gray-500"
+                      }`}
+                  >
+                    Chỉ dành cho user mới: {forNewUser ? "Có" : "Không"}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setIsActive(!isActive)}
+                  className="mb-6"
+                >
+                  <Text
+                    className={`font-semibold ${isActive ? "text-green-600" : "text-gray-500"
+                      }`}
+                  >
+                    Trạng thái: {isActive ? "Đang bật" : "Tắt"}
+                  </Text>
+                </Pressable>
+
+                {/* ================= SAVE ================= */}
+                <Pressable
+                  onPress={handleUpdate}
+                  className="bg-[#1b4f94] py-3 rounded-xl items-center mb-6"
+                >
+                  <Text className="text-white font-bold text-base">
+                    Lưu thay đổi
+                  </Text>
+                </Pressable>
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ===== DELETE CONFIRM MODAL ===== */}
+      <Modal
+        visible={!!deleteId}
+        transparent
+        animationType="slide"
+      >
+
         <Pressable
           className="flex-1 bg-black/40 justify-end"
-          onPress={() => setEditing(null)}
+          onPress={() => setDeleteId(null)}
         >
           <Pressable
             onPress={() => { }}
-            className="bg-white rounded-t-3xl p-5 max-h-[92%]"
+            className="bg-white rounded-t-3xl px-6 pt-5 pb-8"
           >
-            {/* ===== HEADER ===== */}
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-xl font-bold text-[#1c4273]">
-                Sửa voucher
-              </Text>
+            {/* HANDLE BAR */}
+            <View className="w-12 h-1 bg-gray-300 rounded-full self-center mb-4" />
+
+            {/* TITLE */}
+            <Text className="text-lg font-bold text-[#1b4f94] text-center mb-2">
+              Xoá voucher?
+            </Text>
+
+            <Text className="text-center text-gray-500 mb-6">
+              Voucher này sẽ bị xoá vĩnh viễn và không thể khôi phục.
+            </Text>
+
+            {/* ACTIONS */}
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => setDeleteId(null)}
+                className="flex-1 border border-gray-300 rounded-xl py-3 items-center"
+              >
+                <Text className="font-semibold text-gray-600">
+                  Huỷ
+                </Text>
+              </Pressable>
 
               <Pressable
-                onPress={() => setEditing(null)}
-                className="bg-gray-200 rounded-full p-1"
+                onPress={async () => {
+                  if (!deleteId) return;
+
+                  await supabase
+                    .from("vouchers")
+                    .delete()
+                    .eq("id", deleteId);
+
+                  setDeleteId(null);
+                  fetchVouchers();
+                }}
+                className="flex-1 bg-red-600 rounded-xl py-3 items-center"
               >
-                <Ionicons name="close" size={22} color="#1b4f94" />
+                <Text className="font-bold text-white">
+                  Xoá
+                </Text>
               </Pressable>
             </View>
-
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* ================= INFO ================= */}
-              <Text className="text-base font-bold text-[#1b4f94] mb-2">
-                Thông tin voucher
-              </Text>
-
-              <View className="mb-3">
-                <Text className="text-xs text-gray-400 mb-1">Mã voucher</Text>
-                <View className="border border-gray-200 rounded-xl p-3 bg-gray-100">
-                  <Text className="font-semibold text-[#1b4f94]">
-                    {code}
-                  </Text>
-                </View>
-              </View>
-
-              <TextInput
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Tiêu đề"
-                className="border border-gray-200 rounded-xl p-3 mb-3"
-              />
-
-              <TextInput
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Mô tả"
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                className="border border-gray-200 rounded-xl p-3 mb-4"
-              />
-
-              {/* ================= DISCOUNT TYPE ================= */}
-              <Text className="text-base font-bold text-[#1b4f94] mb-2">
-                Loại giảm giá
-              </Text>
-
-              <View className="flex-row gap-2 mb-4">
-                <Pressable
-                  onPress={() => setDiscountType("percent")}
-                  className={`px-4 py-2 rounded-full ${discountType === "percent"
-                    ? "bg-[#1b4f94]"
-                    : "bg-gray-200"
-                    }`}
-                >
-                  <Text
-                    className={`text-sm ${discountType === "percent"
-                      ? "text-white font-bold"
-                      : "text-gray-700"
-                      }`}
-                  >
-                    %
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => setDiscountType("fixed")}
-                  className={`px-4 py-2 rounded-full ${discountType === "fixed"
-                    ? "bg-[#1b4f94]"
-                    : "bg-gray-200"
-                    }`}
-                >
-                  <Text
-                    className={`text-sm ${discountType === "fixed"
-                      ? "text-white font-bold"
-                      : "text-gray-700"
-                      }`}
-                  >
-                    VNĐ
-                  </Text>
-                </Pressable>
-              </View>
-
-              {/* ================= VALUES ================= */}
-              <Text className="text-base font-bold text-[#1b4f94] mb-2">
-                Giá trị & điều kiện
-              </Text>
-
-              <TextInput
-                value={discountValue}
-                onChangeText={setDiscountValue}
-                keyboardType="numeric"
-                placeholder="Giá trị giảm"
-                className="border border-gray-200 rounded-xl p-3 mb-3"
-              />
-
-              <TextInput
-                value={minOrderValue}
-                onChangeText={setMinOrderValue}
-                keyboardType="numeric"
-                placeholder="Đơn tối thiểu (tuỳ chọn)"
-                className="border border-gray-200 rounded-xl p-3 mb-3"
-              />
-
-              <TextInput
-                value={maxUsage}
-                onChangeText={setMaxUsage}
-                keyboardType="numeric"
-                placeholder="Số lần dùng / user"
-                className="border border-gray-200 rounded-xl p-3 mb-4"
-              />
-
-              {/* ================= FLAGS ================= */}
-              <Text className="text-base font-bold text-[#1b4f94] mb-2">
-                Trạng thái & đối tượng
-              </Text>
-
-              <Pressable
-                onPress={() => setForNewUser(!forNewUser)}
-                className="mb-2"
-              >
-                <Text
-                  className={`font-semibold ${forNewUser ? "text-green-600" : "text-gray-500"
-                    }`}
-                >
-                  Chỉ dành cho user mới: {forNewUser ? "Có" : "Không"}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setIsActive(!isActive)}
-                className="mb-6"
-              >
-                <Text
-                  className={`font-semibold ${isActive ? "text-green-600" : "text-gray-500"
-                    }`}
-                >
-                  Trạng thái: {isActive ? "Đang bật" : "Tắt"}
-                </Text>
-              </Pressable>
-
-              {/* ================= SAVE ================= */}
-              <Pressable
-                onPress={handleUpdate}
-                className="bg-[#1b4f94] py-3 rounded-xl items-center mb-6"
-              >
-                <Text className="text-white font-bold text-base">
-                  Lưu thay đổi
-                </Text>
-              </Pressable>
-            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>
-
     </SafeAreaView>
   );
 }
