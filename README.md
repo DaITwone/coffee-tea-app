@@ -144,52 +144,51 @@ assets/        # Images and branding
 
 ## 🎥 Video Demo
 
-Xem video demo đầy đủ các tính năng chính của ứng dụng:
-
 <div align="center">
-  
-### 👉 [**Xem Video Demo Tại Đây**](https://drive.google.com/file/d/18pcMsNR4m7o4B77V0esO-VlOrK9AyPRx/view?usp=sharing) 👈
+
+👉 [**Watch The Demo Video**](https://drive.google.com/file/d/18pcMsNR4m7o4B77V0esO-VlOrK9AyPRx/view?usp=sharing) 👈
 
 </div>
 
 ---
 
-## 📸 Giao Diện Ứng Dụng
+## 📸 Application Screenshots
 
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/home.PNG" alt="Trang chủ" width="100%"/>
+      <img src="./docs/screenshots/home.PNG" alt="Home Screen" width="100%"/>
       <br/>
-      <strong>🏠 Trang Chủ</strong>
+      <strong>🏠 Home</strong>
       <br/>
-      <em>Giao diện chính với banner và danh mục sản phẩm</em>
+      <em>Main interface with banners and product categories</em>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/menu.PNG" alt="Thực đơn" width="100%"/>
+      <img src="./docs/screenshots/menu.PNG" alt="Menu Screen" width="100%"/>
       <br/>
-      <strong>📋 Thực Đơn</strong>
+      <strong>📋 Menu</strong>
       <br/>
-      <em>Danh sách món với bộ lọc theo danh mục</em>
+      <em>Product list with category-based filtering</em>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/theme.PNG" alt="Theme" width="100%"/>
+      <img src="./docs/screenshots/theme.PNG" alt="Theme Customization" width="100%"/>
       <br/>
-      <strong>🎨 Tùy Chỉnh Theme</strong>
+      <strong>🎨 Theme Customization</strong>
       <br/>
-      <em>Thay đổi giao diện và màu sắc ứng dụng</em>
+      <em>Change application theme and visual style</em>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/admin-products.PNG" alt="Admin" width="100%"/>
+      <img src="./docs/screenshots/admin-products.PNG" alt="Admin Dashboard" width="100%"/>
       <br/>
-      <strong>🛠️ Quản Trị Sản Phẩm</strong>
+      <strong>🛠️ Admin – Product Management</strong>
       <br/>
-      <em>Dashboard quản lý sản phẩm cho admin</em>
+      <em>Admin dashboard for managing products</em>
     </td>
   </tr>
 </table>
+
 
 ---
 
