@@ -38,6 +38,9 @@ yarn-error.*
 
 app-example
 
+# Supabase secrets
+lib/supabaseClient.ts
+
 # generated native folders
 /ios
 /android
